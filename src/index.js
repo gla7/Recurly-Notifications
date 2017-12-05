@@ -4,7 +4,7 @@ const axios = require('axios');
 const express = require('express');
 const bodyParser = require('body-parser');
 const qs = require('querystring');
-const ticket = require('./ticket');
+const notification = require('./notification');
 const debug = require('debug')('slash-command-template:index');
 
 const app = express();
@@ -34,10 +34,10 @@ app.post('/commands', (req, res) => {
     // create the dialog payload - includes the dialog structure, Slack API token,
     // and trigger ID
     const dialog = {
-      token: process.env.SLACK_ACCESS_TOKEN,
+      token: process.env.SLACK_ACCESS_TOKEN, // the OAUTH access token of the app in https://api.slack.com/apps/A8A0GTQS1/oauth?
       trigger_id,
       dialog: JSON.stringify({
-        title: 'Submit a helpdesk ticket',
+        title: 'New Recurly Notification',
         callback_id: 'submit-ticket',
         submit_label: 'Submit',
         elements: [
@@ -55,13 +55,13 @@ app.post('/commands', (req, res) => {
             optional: true,
           },
           {
-            label: 'Urgency',
+            label: 'Type',
             type: 'select',
-            name: 'urgency',
+            name: 'types',
             options: [
-              { label: 'Low', value: 'Low' },
-              { label: 'Medium', value: 'Medium' },
-              { label: 'High', value: 'High' },
+              { label: 'New Feature(s)', value: 'New Feature(s)' },
+              { label: 'Bug Fix(es)', value: 'Bug Fix(es)' },
+              { label: 'Availability', value: 'Availability' },
             ],
           },
         ],
@@ -85,7 +85,7 @@ app.post('/commands', (req, res) => {
 
 /*
  * Endpoint to receive the dialog submission. Checks the verification token
- * and creates a Helpdesk ticket
+ * and creates a notification
  */
 app.post('/interactive-component', (req, res) => {
   const body = JSON.parse(req.body.payload);
@@ -98,8 +98,8 @@ app.post('/interactive-component', (req, res) => {
     // Slack know the command was received
     res.send('');
 
-    // create Helpdesk ticket
-    ticket.create(body.user.id, body.submission);
+    // create notification
+    notification.create(body.user.id, body.submission);
   } else {
     debug('Token mismatch');
     res.sendStatus(500);
