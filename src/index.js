@@ -26,12 +26,14 @@ app.get('/', (req, res) => {
 
 // send new merchants' stuff here
 app.post('/newMerchant', (req, res) => {
+  const name = req.body.text.split(' ')[0]
+  const incomingWebHookURL = req.body.text.split(' ')[1]
   const Merchant = require('./models/merchant').Merchant
   const newMerchant = new Merchant({
-    name: req.body.name,
-    incomingWebHookURL: req.body.incomingWebHookURL
+    name,
+    incomingWebHookURL
   })
-  newMerchant.save((err, merchant) => {
+  newMerchant.save((err, merchant, next) => {
     if (err) { return next(err) }
     console.log("SAVED SUN!!!")
   })
