@@ -6,8 +6,12 @@ const bodyParser = require('body-parser');
 const qs = require('querystring');
 const notification = require('./notification');
 const debug = require('debug')('slash-command-template:index');
+const mongoose = require('mongoose');
 
 const app = express();
+
+// mongo setup
+mongoose.connect('mongodb://' + process.env.MLAB_USERNAME + ':' + process.env.MLAB_PW + '@ds131826.mlab.com:31826/recurlynotifications');
 
 /*
  * Parse application/x-www-form-urlencoded && application/json
@@ -19,6 +23,19 @@ app.get('/', (req, res) => {
   res.send('<h2>The Slash Command and Dialog app is running</h2> <p>Follow the' +
   ' instructions in the README to configure the Slack App and your environment variables.</p>');
 });
+
+// send new merchants' stuff here
+app.post('/newMerchant', (req, res) => {
+  const Merchant = require('./models/merchant').Merchant
+  const newMerchant = new Merchant({
+    name: req.body.name,
+    incomingWebHookURL: req.body.incomingWebHookURL
+  })
+  newMerchant.save((err, merchant) => {
+    if (err) { return next(err) }
+    console.log("SAVED SUN!!!")
+  })
+})
 
 /*
  * Endpoint to receive /helpdesk slash command from Slack.

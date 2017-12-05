@@ -2,6 +2,7 @@ const axios = require('axios');
 const debug = require('debug')('slash-command-template:ticket');
 const qs = require('querystring');
 const users = require('./users');
+const Merchant = require('./models/merchant').Merchant
 
 const notificationTypeColor = function (notificationType) {
   if (notificationType === 'Availability') {
@@ -56,9 +57,9 @@ const create = (userId, submission) => {
       },
     ],
   })).then((result) => {
-    console.log("GETTING RESULT: ", result)
+    console.log("GETTING RESULT: ")
   }).catch((err) => {
-    console.log("GETTING ERR: ", err)
+    console.log("GETTING ERR: ")
   })
 
   const fetchUserEmail = new Promise((resolve, reject) => {
