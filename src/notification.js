@@ -48,37 +48,42 @@ const create = (userId, submission) => {
   const notification = {};
 
   // send notifications to merchants (hardcoded)
-  axios.post('https://hooks.slack.com/services/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', JSON.stringify({
-    color: notificationTypeColor(submission.types),
-    fields: [
-      {
-        title: submission.title,
-        value: submission.description || ''
-      },
-    ],
-  })).then((result) => {
-    console.log("GETTING RESULT: ")
-  }).catch((err) => {
-    console.log("GETTING ERR: ")
+  Merchant.find({}, (err, merchants) => {
+    if (err) { return next(err) }
+    merchants.map(merchant => {
+      axios.post(merchant.incomingWebHookURL, JSON.stringify({
+        color: notificationTypeColor(submission.types),
+        fields: [
+          {
+            title: submission.title,
+            value: submission.description || ''
+          },
+        ],
+      })).then((result) => {
+        console.log("GETTING RESULT: ")
+      }).catch((err) => {
+        console.log("GETTING ERR: ")
+      })
+    })
+  }).then(() => {
+    const fetchUserEmail = new Promise((resolve, reject) => {
+      users.find(userId).then((result) => {
+        debug(`Find user: ${userId}`);
+        resolve(result.data.user.profile.email);
+      }).catch((err) => { reject(err); });
+    });
+
+    fetchUserEmail.then((result) => {
+      notification.userId = userId;
+      notification.userEmail = result;
+      notification.title = submission.title;
+      notification.description = submission.description;
+      notification.types = submission.types;
+      sendConfirmation(notification);
+
+      return notification;
+    }).catch((err) => { console.error(err); });
   })
-
-  const fetchUserEmail = new Promise((resolve, reject) => {
-    users.find(userId).then((result) => {
-      debug(`Find user: ${userId}`);
-      resolve(result.data.user.profile.email);
-    }).catch((err) => { reject(err); });
-  });
-
-  fetchUserEmail.then((result) => {
-    notification.userId = userId;
-    notification.userEmail = result;
-    notification.title = submission.title;
-    notification.description = submission.description;
-    notification.types = submission.types;
-    sendConfirmation(notification);
-
-    return notification;
-  }).catch((err) => { console.error(err); });
 };
 
 module.exports = { create, sendConfirmation };
