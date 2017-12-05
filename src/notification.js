@@ -46,6 +46,21 @@ const sendConfirmation = (notification) => {
 const create = (userId, submission) => {
   const notification = {};
 
+  // send notifications to merchants (hardcoded)
+  axios.post('https://hooks.slack.com/services/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', JSON.stringify({
+    color: notificationTypeColor(submission.types),
+    fields: [
+      {
+        title: submission.title,
+        value: submission.description || ''
+      },
+    ],
+  })).then((result) => {
+    console.log("GETTING RESULT: ", result)
+  }).catch((err) => {
+    console.log("GETTING ERR: ", err)
+  })
+
   const fetchUserEmail = new Promise((resolve, reject) => {
     users.find(userId).then((result) => {
       debug(`Find user: ${userId}`);
